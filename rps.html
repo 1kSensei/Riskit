@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riskit Rock Paper Scissors</title>
+    <style>
+        /* Add CSS styling here */
+        body {
+            background-color: #1c1c1c;
+            color: white; /* Set text color to contrast with background */
+            font-family: Arial, sans-serif; /* Optional: Set font family */
+        }
+        .container {
+            text-align: center;
+            margin-top: 50px;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        input {
+            margin-top: 10px;
+            padding: 5px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Riskit.com Rock Paper Scissors</h1>
+        <p>Balance: $<span id="balance">1000</span></p>
+        <input type="number" id="betAmount" placeholder="Enter bet amount">
+        <button onclick="play('rock')">Rock</button>
+        <button onclick="play('paper')">Paper</button>
+        <button onclick="play('scissors')">Scissors</button>
+        <p id="result"></p>
+    </div>
+
+    <script>
+        let balance = 1000;
+        const balanceElement = document.getElementById('balance');
+        const resultElement = document.getElementById('result');
+
+        function play(userChoice) {
+            const betAmount = Number(document.getElementById('betAmount').value);
+            if (betAmount <= 0 || betAmount > balance) {
+                alert("Please enter a valid bet amount.");
+                return;
+            }
+
+            const choices = ['rock', 'paper', 'scissors'];
+            const computerChoice = choices[Math.floor(Math.random() * 3)];
+
+            resultElement.textContent = `Computer chose: ${computerChoice}.`;
+
+            // Determine the winner
+            if (
+                (userChoice === 'rock' && computerChoice === 'scissors') ||
+                (userChoice === 'paper' && computerChoice === 'rock') ||
+                (userChoice === 'scissors' && computerChoice === 'paper')
+            ) {
+                resultElement.textContent += ` You win!`;
+                balance += betAmount;
+            } else if (userChoice === computerChoice) {
+                resultElement.textContent += ` It's a tie!`;
+            } else {
+                resultElement.textContent += ` Computer wins!`;
+                balance -= betAmount;
+            }
+
+            balanceElement.textContent = balance;
+
+            if (balance <= 0) {
+                alert("Game over! You've run out of money.");
+                balance = 1000; // Reset balance to 1000
+                balanceElement.textContent = balance;
+            }
+        }
+    </script>
+</body>
+
+</html>
+            <div class="rules">
+                <h2>Rules:</h2>
+                <p>1. Rock beats Scissors</p>
+                <p>2. Scissors beats Paper</p>
+                <p>3. Paper beats Rock</p>
+                <p>4. Choose wisely and good luck!</p>
+            </div>

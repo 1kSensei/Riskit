@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riskit.com Coin Flip</title>
+    <style>
+        /* Add CSS styling here */
+      body {
+          background-color: #1c1c1c;
+          color: white; /* Set text color to contrast with background */
+          font-family: Arial, sans-serif; /* Optional: Set font family */
+      }
+
+        .container {
+            text-align: center;
+            margin-top: 50px;
+        }
+        img {
+            width: 150px;
+            height: 150px;
+            margin: 20px;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        input[type="number"] {
+            margin-top: 10px;
+            padding: 5px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Risk.com Coin Flip</h1>
+        <h1>Early Beta</h1>
+        <img id="coin" src="" alt="Coin">
+        <p>Balance: $<span id="balance">50</span></p>
+        <input type="number" id="betAmount" placeholder="Enter bet amount">
+        <button onclick="chooseSide('heads')">Heads</button>
+        <button onclick="chooseSide('tails')">Tails</button>
+    </div>
+
+    <script>
+        // JavaScript logic goes here
+        let balance = 50; // Initial balance
+        const balanceElement = document.getElementById('balance');
+        const coinElement = document.getElementById('coin');
+
+        function flipCoin(selectedSide) {
+            // Randomly select heads or tails (0 for heads, 1 for tails)
+            const result = Math.floor(Math.random() * 2);
+            const coinImage = result === 0 ? 'heads.png' : 'tails.png';
+
+            // Update the coin image
+            coinElement.src = coinImage;
+
+            // Determine if the player wins or loses based on selected side
+            const playerWins = (selectedSide === 'heads' && result === 0) || (selectedSide === 'tails' && result === 1);
+
+            // Get the bet amount entered by the player
+            const betAmount = parseInt(document.getElementById('betAmount').value);
+
+            // Check if the bet amount is valid
+            if (isNaN(betAmount) || betAmount <= 0 || betAmount > balance) {
+                alert("Please enter a valid bet amount.");
+                return;
+            }
+
+            // Update balance based on result
+            if (playerWins) {
+                // If player wins, adjust payout as needed
+                balance += betAmount; // Adjust payout as needed
+            } else {
+                // If player loses, adjust loss as needed
+                balance -= betAmount; // Adjust loss as needed
+            }
+
+            // Update balance display
+            balanceElement.textContent = balance;
+
+            // Check if player has run out of money
+            if (balance <= 0) {
+                alert("Game over! You've run out of money.");
+                // You can reset the game or take other actions here
+            }
+        }
+
+        function chooseSide(side) {
+            // Clear previous coin flip result
+            coinElement.src = '';
+
+            // Call flipCoin function with selected side
+            flipCoin(side);
+        }
+    </script>
+</body>
+</html>

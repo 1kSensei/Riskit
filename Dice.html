@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riskit.com Dice Game</title>
+    <style>
+        /* Add CSS styling to match Coin.html */
+        body {
+            background-color: #1c1c1c;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        img {
+            width: 150px;
+            height: 150px;
+            margin: 20px;
+        }
+
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        input[type="number"] {
+            margin-top: 10px;
+            padding: 5px;
+            font-size: 16px;
+        }
+
+        .rules {
+            margin-top: 20px;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Riskit.com Dice Game</h1>
+        <img id="dice" src="" alt="Dice">
+        <p>Balance: $<span id="balance">100</span></p>
+        <input type="number" id="betAmount" placeholder="Enter bet amount">
+        <button onclick="rollDice()">Roll Dice</button>
+
+        <div class="rules">
+            <h2>Rules:</h2>
+            <ol>
+                <li>Roll the dice and bet an amount of money.</li>
+                <li>If the dice roll is 4, 5, or 6, you win and get double your bet amount.</li>
+                <li>If the dice roll is 1, 2, or 3, you lose your bet amount.</li>
+                <li>You can continue playing until you run out of money.</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        let balance = 100;
+        const balanceElement = document.getElementById('balance');
+        const diceElement = document.getElementById('dice');
+
+        function rollDice() {
+            const rollResult = Math.floor(Math.random() * 6) + 1;
+            const diceImage = rollResult + 'd.png';
+            diceElement.src = diceImage;
+
+            const betAmount = parseInt(document.getElementById('betAmount').value);
+
+            if (isNaN(betAmount) || betAmount <= 0 || betAmount > balance) {
+                alert("Please enter a valid bet amount.");
+                return;
+            }
+
+            const playerWins = rollResult >= 4;
+
+            if (playerWins) {
+                balance += betAmount;
+            } else {
+                balance -= betAmount;
+            }
+
+            balanceElement.textContent = balance;
+
+            if (balance <= 0) {
+                alert("Game over! You've run out of money.");
+            }
+        }
+    </script>
+</body>
+
+</html>

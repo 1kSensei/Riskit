@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riskit.com Slot Machine</title>
+    <style>
+        /* Add CSS styling to match Coin.html */
+        body {
+            background-color: #1c1c1c;
+            color: white; /* Set text color to contrast with background */
+            font-family: Arial, sans-serif; /* Optional: Set font family */
+        }
+        .container {
+            text-align: center;
+            margin-top: 50px;
+        }
+        .slots {
+            text-align: center;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        input {
+            margin-top: 10px;
+            padding: 5px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Riskit.com Slot Machine</h1>
+        <p>Balance: $<span id="balance">250000</span></p>
+        <input type="number" id="betAmount" placeholder="Enter bet amount">
+        <button onclick="spin()">Spin</button>
+        <div class="slots">
+            <div id="slot1">🍒</div>
+            <div id="slot2">🍋</div>
+            <div id="slot3">🍊</div>
+        </div>
+    </div>
+
+    <script>
+        let balance = 250000;
+        const balanceElement = document.getElementById('balance');
+        const slot1Element = document.getElementById('slot1');
+        const slot2Element = document.getElementById('slot2');
+        const slot3Element = document.getElementById('slot3');
+        const betAmountElement = document.getElementById('betAmount');
+
+        function spin() {
+            const betAmount = parseInt(betAmountElement.value);
+            if (betAmount <= 0 || betAmount > balance) {
+                alert("Please enter a valid bet amount.");
+                return;
+            }
+
+            const fruits = ["🍒", "🍋", "🍊"];
+            const result1 = fruits[Math.floor(Math.random() * fruits.length)];
+            const result2 = fruits[Math.floor(Math.random() * fruits.length)];
+            const result3 = fruits[Math.floor(Math.random() * fruits.length)];
+
+            slot1Element.textContent = result1;
+            slot2Element.textContent = result2;
+            slot3Element.textContent = result3;
+
+            if (result1 === result2 && result2 === result3) {
+                balance += betAmount * 4; // Adjusted for 4x payout
+            } else {
+                balance -= betAmount;
+            }
+
+            balanceElement.textContent = balance;
+
+            if (balance <= 0) {
+                alert("Game over! You've run out of money.");
+            }
+        }
+    </script>
+</body>
+</html>
+<div class="rules" style="margin-top: 20px; padding: 10px; background-color: #1c1c1c; color: white;">
+    <h2>Rules:</h2>
+    <p>1. Place your bet and spin the slots.</p>
+    <p>2. If all three slots match, you 4x your bet.</p> <!-- Updated based on 4x payout -->
+    <p>3. If not, you lose your bet amount.</p>
+</div>
