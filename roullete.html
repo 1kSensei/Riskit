@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riskit</title>
+    <style>
+        body {
+            background-color: #1c1c1c;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Riskit Hard Roullete</h1>
+    <p>Welcome to the IMPOSSIBLE Roulette Game!</p>
+    
+    <p>Balance: $<span id="balance">25000</span></p>
+    
+    <p>Choose a number between 0 and 36:</p>
+    <input type="number" id="betNumber" min="0" max="36">
+    <p>Enter your bet amount:</p>
+    <input type="number" id="betAmount">
+    <br>
+    <button onclick="spinRoulette()">Spin the Roulette</button>
+
+    <p id="result"></p>
+    
+    <script>
+        let balance = 25000;
+
+        function updateBalance(amount) {
+            balance += amount;
+            document.getElementById('balance').textContent = balance;
+        }
+
+        function spinRoulette() {
+            let betNumber = parseInt(document.getElementById('betNumber').value);
+            let betAmount = parseInt(document.getElementById('betAmount').value);
+
+            if (betNumber < 0 || betNumber > 36 || isNaN(betNumber) || isNaN(betAmount) || betAmount <= 0) {
+                alert("Please enter a valid bet number and amount.");
+                return;
+            }
+
+            let winningNumber = Math.floor(Math.random() * 37);
+
+            let resultText = `The winning number is: ${winningNumber}. `;
+            if (betNumber === winningNumber) {
+                let winnings = betAmount * 36;
+                resultText += `Congratulations! You win $${winnings}!`;
+                updateBalance(winnings);
+            } else {
+                resultText += "You lose. Better luck next time!";
+                updateBalance(-betAmount);
+            }
+
+            document.getElementById('result').textContent = resultText;
+        }
+    </script>
+</body>
+</html>
