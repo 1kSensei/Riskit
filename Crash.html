@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riskit Crash</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0f212e;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .game-container {
+            background-color: #1a2c3a;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        #multiplier {
+            font-size: 48px;
+            margin: 20px 0;
+        }
+        #graph {
+            width: 400px;
+            height: 200px;
+            margin: 20px auto;
+            border: 1px solid #ffffff;
+        }
+        input, button {
+            margin: 10px;
+            padding: 5px 10px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #00e701;
+            color: #0f212e;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #00ff00;
+        }
+        #balance, #result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Riskit Crash</h1>
+        <div id="balance">Balance: $10000.00</div>
+        <div id="multiplier">1.00x</div>
+        <canvas id="graph" width="400" height="200"></canvas>
+        <div>
+            <input type="number" id="betAmount" placeholder="Bet amount" min="1" step="0.01">
+            <input type="number" id="autoCashout" placeholder="Auto cashout" min="1" step="0.01">
+            <button id="betButton">Place Bet</button>
+            <button id="cashoutButton" disabled>Cashout</button>
+        </div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        let balance = 1000;
+        let currentBet = 0;
+        let currentMultiplier = 1;
+        let gameInterval;
+        let graphData = [];
+        const maxGraphPoints = 100;
+
+        const balanceElement = document.getElementById('balance');
+        const multiplierElement = document.getElementById('multiplier');
+        const betButton = document.getElementById('betButton');
+        const cashoutButton = document.getElementById('cashoutButton');
+        const resultElement = document.getElementById('result');
+        const graphCanvas = document.getElementById('graph');
+        const ctx = graphCanvas.getContext('2d');
+
+        function updateBalance() {
+            balanceElement.textContent = `Balance: $${balance.toFixed(2)}`;
+        }
+
+        function updateMultiplier() {
+            multiplierElement.textContent = `${currentMultiplier.toFixed(2)}x`;
+        }
+
+        function drawGraph() {
+            ctx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
+            ctx.beginPath();
+            ctx.moveTo(0, graphCanvas.height);
+            
+            for (let i = 0; i < graphData.length; i++) {
+                const x = (i / maxGraphPoints) * graphCanvas.width;
+                const y = graphCanvas.height - (graphData[i] / 5) * graphCanvas.height;
+                ctx.lineTo(x, y);
+            }
+            
+            ctx.strokeStyle = '#00e701';
+            ctx.stroke();
+        }
+
+        function startGame() {
+            currentBet = parseFloat(document.getElementById('betAmount').value);
+            const autoCashout = parseFloat(document.getElementById('autoCashout').value);
+
+            if (isNaN(currentBet) || currentBet <= 0 || currentBet > balance) {
+                alert('Invalid bet amount');
+                return;
+            }
+
+            balance -= currentBet;
+            updateBalance();
+            betButton.disabled = true;
+            cashoutButton.disabled = false;
+            resultElement.textContent = '';
+            graphData = [1];
+
+            gameInterval = setInterval(() => {
+                currentMultiplier += 0.01;
+                updateMultiplier();
+                graphData.push(currentMultiplier);
+                if (graphData.length > maxGraphPoints) {
+                    graphData.shift();
+                }
+                drawGraph();
+
+                if (autoCashout && currentMultiplier >= autoCashout) {
+                    cashout();
+                }
+
+                if (Math.random() < 0.01) {
+                    gameOver();
+                }
+            }, 100);
+        }
+
+        function cashout() {
+            clearInterval(gameInterval);
+            const winnings = currentBet * currentMultiplier;
+            balance += winnings;
+            updateBalance();
+            resultElement.textContent = `You won $${winnings.toFixed(2)}!`;
+            resetGame();
+        }
+
+        function gameOver() {
+            clearInterval(gameInterval);
+            resultElement.textContent = 'Crashed! You lost your bet.';
+            resetGame();
+        }
+
+        function resetGame() {
+            currentMultiplier = 1;
+            updateMultiplier();
+            betButton.disabled = false;
+            cashoutButton.disabled = true;
+            currentBet = 0;
+        }
+
+        betButton.addEventListener('click', startGame);
+        cashoutButton.addEventListener('click', cashout);
+
+        updateBalance();
+        drawGraph();
+    </script>
+</body>
+</html>
