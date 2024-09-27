@@ -105,39 +105,45 @@
         }
 
         function startGame() {
-            currentBet = parseFloat(document.getElementById('betAmount').value);
-            const autoCashout = parseFloat(document.getElementById('autoCashout').value);
+    currentBet = parseFloat(document.getElementById('betAmount').value);
+    const autoCashout = parseFloat(document.getElementById('autoCashout').value);
 
-            if (isNaN(currentBet) || currentBet <= 0 || currentBet > balance) {
-                alert('Invalid bet amount');
-                return;
-            }
+    if (isNaN(currentBet) || currentBet <= 0 || currentBet > balance) {
+        alert('Invalid bet amount');
+        return;
+    }
 
-            balance -= currentBet;
-            updateBalance();
-            betButton.disabled = true;
-            cashoutButton.disabled = false;
-            resultElement.textContent = '';
-            graphData = [1];
+    balance -= currentBet;
+    updateBalance();
+    betButton.disabled = true;
+    cashoutButton.disabled = false;
+    resultElement.textContent = '';
+    graphData = [1];
 
-            gameInterval = setInterval(() => {
-                currentMultiplier += 0.01;
-                updateMultiplier();
-                graphData.push(currentMultiplier);
-                if (graphData.length > maxGraphPoints) {
-                    graphData.shift();
-                }
-                drawGraph();
-
-                if (autoCashout && currentMultiplier >= autoCashout) {
-                    cashout();
-                }
-
-                if (Math.random() < 0.01) {
-                    gameOver();
-                }
-            }, 100);
+    gameInterval = setInterval(() => {
+        currentMultiplier += 0.01;
+        updateMultiplier();
+        graphData.push(currentMultiplier);
+        if (graphData.length > maxGraphPoints) {
+            graphData.shift();
         }
+        drawGraph();
+
+        if (autoCashout && currentMultiplier >= autoCashout) {
+            cashout();
+        }
+
+        if (currentMultiplier >= 10) {
+            clearInterval(gameInterval);
+            resultElement.textContent = 'Crashed! You lost your bet.';
+            resetGame();
+        } else if (Math.random() < 0.01) {
+            clearInterval(gameInterval);
+            resultElement.textContent = 'Crashed! You lost your bet.';
+            resetGame();
+        }
+    }, 100);
+}
 
         function cashout() {
             clearInterval(gameInterval);
