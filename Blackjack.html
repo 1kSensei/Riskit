@@ -28,6 +28,21 @@
             margin: 0 5px;
         }
 
+        .card img {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-200px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
         button {
             margin: 10px;
             padding: 10px 20px;
@@ -55,6 +70,7 @@
         <p>Player Score: <span id="playerScore">0</span></p>
         <p>Dealer Score: <span id="dealerScore">0</span></p>
         <p>Balance: $<span id="balance">750</span></p>
+        <p id="message"></p>
         <label for="betAmount">Bet Amount:</label>
         <input type="number" id="betAmount" min="1">
         <button onclick="deal()">Deal</button>
@@ -74,6 +90,7 @@
         const playerScoreElement = document.getElementById('playerScore');
         const dealerScoreElement = document.getElementById('dealerScore');
         const balanceElement = document.getElementById('balance');
+        const messageElement = document.getElementById('message');
 
         function deal() {
             // Get the bet amount
@@ -92,12 +109,13 @@
             // Clear previous hands
             playerHandElement.innerHTML = 'Player\'s hand: ';
             dealerHandElement.innerHTML = 'Dealer\'s hand: ';
+            messageElement.textContent = '';
 
             // Deal two cards to player and dealer
-            for (let i = 0; i < 2; i++) {
-                drawCard(playerHand, playerHandElement);
-                drawCard(dealerHand, dealerHandElement);
-            }
+            drawCard(playerHand, playerHandElement);
+            drawCard(dealerHand, dealerHandElement);
+            drawCard(playerHand, playerHandElement);
+            drawCard(dealerHand, dealerHandElement, true);
 
             // Update scores
             updateScores();
@@ -110,7 +128,7 @@
             checkBlackjack();
         }
 
-        function drawCard(hand, handElement) {
+        function drawCard(hand, handElement, isFaceDown = false) {
             const cardValues = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
             const cardImages = ['2.png', '3.png', '4.png', '5.png', '6.png', '7.png', '8.png', '9.png', '10.png', 'J.png', 'Q.png', 'K.png', 'A.png'];
             const cardIndex = Math.floor(Math.random() * cardValues.length);
@@ -119,10 +137,15 @@
 
             // Create image element for the card
             const img = document.createElement('img');
-            img.src = cardImage;
+            if (isFaceDown) {
+                img.src = 'offside.png';
+                img.dataset.actualSrc = cardImage;
+            } else {
+                img.src = cardImage;
+            }
             img.alt = cardValue;
             img.style.width = '100px'; // Adjust card image size if needed
-            
+
             // Display image in the hand element
             hand.push(cardValue);
             handElement.appendChild(img);
@@ -170,12 +193,12 @@
 
         function checkBlackjack() {
             if (playerScore === 21) {
-                alert("Blackjack! You win!");
+                messageElement.textContent = "Blackjack! You win!";
                 balance += parseInt(document.getElementById('betAmount').value) * 2.5;
                 balanceElement.textContent = balance;
                 return;
             } else if (dealerScore === 21) {
-                alert("Dealer has Blackjack! You lose!");
+                messageElement.textContent = "Dealer has Blackjack! You lose!";
                 return;
             }
         }
@@ -185,12 +208,21 @@
             updateScores();
 
             if (playerScore > 21) {
-                alert("Bust! You lose!");
+                messageElement.textContent = "Bust! You lose!";
                 return;
             }
         }
 
         function stand() {
+            // Reveal dealer's facedown card
+            const dealerCards = dealerHandElement.getElementsByTagName('img');
+            for (let img of dealerCards) {
+                if (img.src.includes('offside.png')) {
+                    img.src = img.dataset.actualSrc;
+                    break;
+                }
+            }
+
             // Dealer hits until their score is 17 or higher
             while (dealerScore < 17) {
                 drawCard(dealerHand, dealerHandElement);
@@ -198,13 +230,13 @@
             }
 
             if (dealerScore > 21 || dealerScore < playerScore) {
-                alert("You win!");
+                messageElement.textContent = "You win!";
                 balance += parseInt(document.getElementById('betAmount').value) * 2;
             } else if (dealerScore === playerScore) {
-                alert("It's a tie!");
+                messageElement.textContent = "It's a tie!";
                 balance += parseInt(document.getElementById('betAmount').value);
             } else {
-                alert("Dealer wins!");
+                messageElement.textContent = "Dealer wins!";
             }
 
             balanceElement.textContent = balance;
