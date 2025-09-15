@@ -58,6 +58,7 @@
         const ballRadius = 10;
         const multipliers = [5, 2, 1.5, 1, 0.5, 0, 0.5, 1, 1.5, 2, 5];
         let balance = 10000;
+        let pegs = [];
 
         function updateBalance() {
             document.getElementById('balance').innerText = `Balance: $${balance.toFixed(2)}`;
@@ -112,35 +113,79 @@
             let x = canvas.width / 2;
             let y = 0;
             let dx = 0;
-            let dy = 2;
+            let dy = 0;
+            const gravity = 0.1;
+            const damping = 0.7;
+
+            // Initialize peg positions for collision detection
+            pegs = [];
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols - (i % 2); j++) {
+                    let pegX = (j * canvas.width) / (cols - 1) + ((i % 2) * canvas.width) / (cols * 2);
+                    let pegY = (i * canvas.height) / rows;
+                    pegs.push({ x: pegX, y: pegY });
+                }
+            }
 
             function animate() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 drawBoard();
 
+                // Draw ball
                 ctx.beginPath();
                 ctx.arc(x, y, ballRadius, 0, 2 * Math.PI);
                 ctx.fillStyle = '#ff0000';
                 ctx.fill();
                 ctx.closePath();
 
-                if (y + dy > canvas.height - ballRadius) {
+                // Apply gravity
+                dy += gravity;
+
+                // Update position
+                x += dx;
+                y += dy;
+
+                // Boundary collision (left and right walls)
+                if (x - ballRadius < 0) {
+                    x = ballRadius;
+                    dx = -dx * damping;
+                } else if (x + ballRadius > canvas.width) {
+                    x = canvas.width - ballRadius;
+                    dx = -dx * damping;
+                }
+
+                // Peg collision detection
+                for (let peg of pegs) {
+                    let distX = x - peg.x;
+                    let distY = y - peg.y;
+                    let dist = Math.sqrt(distX * distX + distY * distY);
+                    if (dist < pegRadius + ballRadius) {
+                        // Simple collision response: reflect dx and reduce speed
+                        if (distX !== 0) {
+                            dx = -dx * damping + (Math.random() - 0.5) * 1.5;
+                        } else {
+                            dx = (Math.random() - 0.5) * 1.5;
+                        }
+                        dy = dy * damping;
+                        // Move ball out of collision
+                        let overlap = pegRadius + ballRadius - dist;
+                        x += (distX / dist) * overlap;
+                        y += (distY / dist) * overlap;
+                    }
+                }
+
+                // Check if ball reached bottom
+                if (y + ballRadius > canvas.height) {
+                    y = canvas.height - ballRadius;
                     const slot = Math.floor(x / (canvas.width / (multipliers.length - 1)));
                     const multiplier = multipliers[slot];
                     const winnings = betAmount * multiplier;
                     balance += winnings;
                     updateBalance();
-                    document.getElementById('result').innerText = 
+                    document.getElementById('result').innerText =
                         `Ball landed on ${multiplier}x. You ${winnings > betAmount ? 'won' : 'lost'} $${Math.abs(winnings - betAmount).toFixed(2)}!`;
                     return;
                 }
-
-                if (y % (canvas.height / rows) < 2 * dy) {
-                    dx = (Math.random() - 0.5) * 4;
-                }
-
-                x += dx;
-                y += dy;
 
                 requestAnimationFrame(animate);
             }

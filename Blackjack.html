@@ -161,8 +161,22 @@
             // Calculate dealer score
             dealerScore = calculateScore(dealerHand);
 
-            // Display dealer score
-            dealerScoreElement.textContent = dealerScore;
+            // Check if dealer has a face-down card
+            const dealerCards = dealerHandElement.getElementsByTagName('img');
+            let hasFaceDownCard = false;
+            for (let img of dealerCards) {
+                if (img.src.includes('offside.png')) {
+                    hasFaceDownCard = true;
+                    break;
+                }
+            }
+
+            // Display dealer score: partial if face-down card, full otherwise
+            if (hasFaceDownCard) {
+                dealerScoreElement.textContent = calculateVisibleDealerScore(dealerHand);
+            } else {
+                dealerScoreElement.textContent = dealerScore;
+            }
         }
 
         function calculateScore(hand) {
@@ -188,6 +202,21 @@
                 }
             }
 
+            return score;
+        }
+
+        function calculateVisibleDealerScore(dealerHand) {
+            // Calculate score of only the first card (visible one)
+            if (dealerHand.length === 0) return 0;
+            const firstCard = dealerHand[0];
+            let score = 0;
+            if (firstCard === 'J' || firstCard === 'Q' || firstCard === 'K') {
+                score = 10;
+            } else if (firstCard === 'A') {
+                score = 11; // Ace is 11 for visible score
+            } else {
+                score = parseInt(firstCard);
+            }
             return score;
         }
 
@@ -222,6 +251,9 @@
                     break;
                 }
             }
+
+            // Update scores after revealing
+            updateScores();
 
             // Dealer hits until their score is 17 or higher
             while (dealerScore < 17) {
