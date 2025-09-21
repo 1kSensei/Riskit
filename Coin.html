@@ -98,12 +98,13 @@
         <h1>Riskit.com Coin Flip</h1>
         <h1>Early Beta</h1>
         <div class="coin-container">
-            <img id="coin" class="coin" src="" alt="Coin">
+            <img id="coin" class="coin" src="heads.png" alt="Coin">
         </div>
         <p>Balance: $<span id="balance">50</span></p>
         <input type="number" id="betAmount" placeholder="Enter bet amount">
         <button onclick="chooseSide('heads')">Heads</button>
         <button onclick="chooseSide('tails')">Tails</button>
+        <div id="gameResult" style="margin-top: 20px; font-size: 18px; font-weight: bold;"></div>
     </div>
 
     <script>
@@ -113,8 +114,12 @@
         const coinElement = document.getElementById('coin');
         const buttons = document.querySelectorAll('button');
         const betInput = document.getElementById('betAmount');
+        const gameResultElement = document.getElementById('gameResult');
 
         function flipCoin(selectedSide) {
+            // Clear previous result message
+            gameResultElement.textContent = '';
+
             // Disable betting during animation
             buttons.forEach(button => button.classList.add('betting-disabled'));
             betInput.classList.add('betting-disabled');
@@ -139,7 +144,8 @@
 
                 // Check if the bet amount is valid
                 if (isNaN(betAmount) || betAmount <= 0 || betAmount > balance) {
-                    alert("Please enter a valid bet amount.");
+                    gameResultElement.textContent = "Please enter a valid bet amount.";
+                    gameResultElement.style.color = "red";
                     // Re-enable betting
                     buttons.forEach(button => button.classList.remove('betting-disabled'));
                     betInput.classList.remove('betting-disabled');
@@ -150,9 +156,13 @@
                 if (playerWins) {
                     // If player wins, adjust payout as needed
                     balance += betAmount; // Adjust payout as needed
+                    gameResultElement.textContent = `You won $${betAmount}!`;
+                    gameResultElement.style.color = "green";
                 } else {
                     // If player loses, adjust loss as needed
                     balance -= betAmount; // Adjust loss as needed
+                    gameResultElement.textContent = `You lost $${betAmount}.`;
+                    gameResultElement.style.color = "red";
                 }
 
                 // Update balance display
@@ -160,7 +170,8 @@
 
                 // Check if player has run out of money
                 if (balance <= 0) {
-                    alert("Game over! You've run out of money.");
+                    gameResultElement.textContent = "Game over! You've run out of money.";
+                    gameResultElement.style.color = "red";
                     // You can reset the game or take other actions here
                 }
 
