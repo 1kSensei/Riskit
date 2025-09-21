@@ -1,6 +1,7 @@
 CHANGELOG
 
 Core:
+- [x] Total redesign on the whole website
 - [x] Added cool loading animation instead of hoping your internet works
 
 Blackjack:
