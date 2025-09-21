@@ -3,51 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Riskit Plinko</title>
+    <title>Riskit.com Plinko</title>
     <style>
+        /* Modern styling matching slots.html */
         body {
+            background-color: #1a2c3a;
+            color: white;
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: #0f212e;
-            color: #ffffff;
+            justify-content: center;
         }
+
+        .container {
+            text-align: center;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .balance-section {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .balance {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .plinko-board-container {
+            margin: 40px 0;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
         #plinkoBoard {
             background-color: #1a2c3a;
-            border: 1px solid #2c3e50;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
         }
-        .controls {
-            margin: 20px 0;
+
+        .bet-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
         }
-        input, button {
+
+        input {
             padding: 10px;
-            margin: 5px;
+            font-size: 16px;
+            border: 2px solid #555;
+            border-radius: 5px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            margin: 10px;
         }
+
+        input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
         button {
-            background-color: #00e701;
-            color: #0f212e;
-            border: none;
+            padding: 12px 30px;
+            font-size: 18px;
             cursor: pointer;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            font-weight: bold;
         }
+
         button:hover {
-            background-color: #00ff00;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
         }
-        #result, #balance {
+
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .win {
+            color: #4CAF50;
             font-size: 1.2em;
-            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .lose {
+            color: #f44336;
+            font-size: 1.2em;
+        }
+
+        .rules {
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .rules h2 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+
+        .rules p {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 600px) {
+            #plinkoBoard {
+                width: 300px !important;
+                height: 450px !important;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            button {
+                padding: 10px 20px;
+                font-size: 16px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Riskit Plinko</h1>
-    <div id="balance">Balance: $10,000.00</div>
-    <canvas id="plinkoBoard" width="400" height="600"></canvas>
-    <div class="controls">
-        <input type="number" id="betAmount" placeholder="Enter bet amount" min="1">
-        <button onclick="placeBet()">Place Bet</button>
+    <div class="container">
+        <h1>🪐 Riskit.com Plinko 🪐</h1>
+
+        <div class="balance-section">
+            <p>Balance: $<span class="balance" id="balance">10000.00</span></p>
+        </div>
+
+        <div class="plinko-board-container">
+            <canvas id="plinkoBoard" width="400" height="600"></canvas>
+        </div>
+
+        <div class="bet-section">
+            <input type="number" id="betAmount" placeholder="Enter bet amount" min="1">
+            <button onclick="placeBet()">🪐 Place Bet 🪐</button>
+        </div>
+
+        <div class="results" id="result">
+            <p>Place your bet and watch the ball fall!</p>
+        </div>
     </div>
-    <div id="result"></div>
+
+    <div class="rules">
+        <h2>📋 Rules:</h2>
+        <p>1. 🎯 Place your bet amount</p>
+        <p>2. 🪐 Click "Place Bet" to drop the ball</p>
+        <p>3. 💰 Watch the ball bounce through the pegs</p>
+        <p>4. 🏆 Land on higher multipliers to win more!</p>
+        <p>5. ❌ Different slots have different payouts</p>
+    </div>
 
     <script>
         const canvas = document.getElementById('plinkoBoard');

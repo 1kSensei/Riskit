@@ -5,44 +5,117 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>riskit</title>
     <style>
-        /* CSS styling */
+        /* CSS styling matching slots.html */
         body {
             background-color: #1a2c3a;
             color: white;
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
             text-align: center;
-            margin-top: 50px;
+            max-width: 800px;
+            width: 100%;
         }
 
         h1 {
             margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .button-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
         }
 
         button {
-            margin: 10px;
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: 15px 30px;
+            font-size: 18px;
             cursor: pointer;
-            background-color: #333;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            font-weight: bold;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .signup-section {
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .signup-button {
+            background: linear-gradient(45deg, #2196F3, #1976D2) !important;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3) !important;
+        }
+
+        .signup-button:hover {
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4) !important;
+        }
+
+        .changelog-link {
+            color: #4CAF50;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .changelog-link:hover {
+            color: #66BB6A;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            button {
+                padding: 12px 24px;
+                font-size: 16px;
+            }
         }
     </style>
 </head>
 <body>
-    <button onclick="redirectTo('signin.html')">Sign Up/in</button>
+    <div class="container">
+        <h1>🎰 Welcome to Riskit.com 🎰</h1>
 
-    <h1>riskit.com</h1>
-    <button onclick="redirectTo('Blackjack.html')">Play Blackjack</button>
-    <button onclick="redirectTo('Coin.html')">Play Coinflip</button>
-    <button onclick="redirectTo('Dice.html')">Play Dice</button>
-    <button onclick="redirectTo('slots.html')">Play Slots</button>
-    <button onclick="redirectTo('roullete.html')">Play Roullete</button>
-    <button onclick="redirectTo('Findit.html')">Play Findit</button>
-    <button onclick="redirectTo('Plinko.html')">Play Plinko</button>
-    <button onclick="redirectTo('Crash.html')">Play Crash</button>
-    <p onclick="redirectTo('signin.html')">See Changelog at github.com/1kSensei/Riskit</p>
+        <div class="button-container">
+            <button onclick="redirectTo('Blackjack.html')">🃏 Play Blackjack</button>
+            <button onclick="redirectTo('Coin.html')">🪙 Play Coinflip</button>
+            <button onclick="redirectTo('Dice.html')">🎲 Play Dice</button>
+            <button onclick="redirectTo('slots.html')">🎰 Play Slots</button>
+            <button onclick="redirectTo('roullete.html')">🎡 Play Roulette</button>
+            <button onclick="redirectTo('Findit.html')">🔍 Play Findit</button>
+            <button onclick="redirectTo('Plinko.html')">🪐 Play Plinko</button>
+            <button onclick="redirectTo('Crash.html')">📈 Play Crash</button>
+        </div>
+
+        <div class="signup-section">
+            <button class="signup-button" onclick="redirectTo('signin.html')">Sign Up/In</button>
+            <p>Ready to test your luck? Choose a game above and start playing!</p>
+            <p><a href="https://github.com/1kSensei/Riskit" class="changelog-link">📋 See Changelog at github.com/1kSensei/Riskit</a></p>
+        </div>
+    </div>
 
     <script>
         function redirectTo(destination) {

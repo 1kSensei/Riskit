@@ -5,32 +5,96 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Riskit.com Coin Flip</title>
     <style>
-        /* Add CSS styling here */
-      body {
-          background-color: #1a2c3a;
-          color: white; /* Set text color to contrast with background */
-          font-family: Arial, sans-serif; /* Optional: Set font family */
-      }
+        /* Modern styling matching slots.html */
+        body {
+            background-color: #1a2c3a;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
 
         .container {
             text-align: center;
-            margin-top: 50px;
+            max-width: 800px;
+            width: 100%;
         }
-        img {
-            width: 150px;
-            height: 150px;
-            margin: 20px;
+
+        h1 {
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
+
+        .balance-section {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .balance {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .bet-section {
+            margin: 20px 0;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #555;
+            border-radius: 5px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            margin-right: 10px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .game-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
         button {
-            margin: 10px;
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: 12px 30px;
+            font-size: 18px;
             cursor: pointer;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            font-weight: bold;
         }
-        input[type="number"] {
-            margin-top: 10px;
-            padding: 5px;
-            font-size: 16px;
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         /* Coin flip animation styles */
@@ -38,6 +102,7 @@
             position: relative;
             display: inline-block;
             perspective: 1000px;
+            margin: 40px 0;
         }
 
         .coin {
@@ -91,20 +156,101 @@
             opacity: 0.5;
             pointer-events: none;
         }
+
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .win {
+            color: #4CAF50;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .lose {
+            color: #f44336;
+            font-size: 1.2em;
+        }
+
+        .rules {
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .rules h2 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+
+        .rules p {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 600px) {
+            .coin {
+                width: 120px;
+                height: 120px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .game-buttons {
+                gap: 15px;
+            }
+
+            button {
+                padding: 10px 20px;
+                font-size: 16px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Riskit.com Coin Flip</h1>
-        <h1>Early Beta</h1>
+        <h1>🪙 Riskit.com Coin Flip 🪙</h1>
+
+        <div class="balance-section">
+            <p>Balance: $<span class="balance" id="balance">50</span></p>
+        </div>
+
+        <div class="bet-section">
+            <input type="number" id="betAmount" placeholder="Enter bet amount" min="1">
+        </div>
+
         <div class="coin-container">
             <img id="coin" class="coin" src="heads.png" alt="Coin">
         </div>
-        <p>Balance: $<span id="balance">50</span></p>
-        <input type="number" id="betAmount" placeholder="Enter bet amount">
-        <button onclick="chooseSide('heads')">Heads</button>
-        <button onclick="chooseSide('tails')">Tails</button>
-        <div id="gameResult" style="margin-top: 20px; font-size: 18px; font-weight: bold;"></div>
+
+        <div class="game-buttons">
+            <button onclick="chooseSide('heads')">🪙 Heads</button>
+            <button onclick="chooseSide('tails')">🪙 Tails</button>
+        </div>
+
+        <div class="results" id="gameResult">
+            <p>Place your bet and choose Heads or Tails!</p>
+        </div>
+    </div>
+
+    <div class="rules">
+        <h2>📋 Rules:</h2>
+        <p>1. 🎯 Place your bet amount</p>
+        <p>2. 🪙 Choose Heads or Tails</p>
+        <p>3. 💰 Watch the coin flip animation</p>
+        <p>4. 🏆 Win double your bet if you guess correctly!</p>
+        <p>5. ❌ Lose your bet if you guess wrong</p>
     </div>
 
     <script>

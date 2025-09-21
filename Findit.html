@@ -3,33 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>riskit</title>
+    <title>Riskit.com Findit</title>
     <style>
-        /* CSS styling */
+        /* Modern styling matching slots.html */
         body {
             background-color: #1a2c3a;
             color: white;
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
             text-align: center;
-            margin-top: 50px;
+            max-width: 800px;
+            width: 100%;
         }
 
         h1 {
             margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .puzzle-section {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 10px;
+            margin: 40px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .puzzle-text {
+            font-size: 1.2em;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .hint {
+            background: rgba(76, 175, 80, 0.1);
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+            margin: 20px 0;
+        }
+
+        .game-controls {
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
         }
 
         button {
-            margin: 10px;
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: 12px 30px;
+            font-size: 18px;
             cursor: pointer;
-            background-color: #333;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            font-weight: bold;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .balance-section {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .balance {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .rules {
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .rules h2 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+
+        .rules p {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            button {
+                padding: 10px 20px;
+                font-size: 16px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>riskit.com's Findit Game</h1>
-    <p>\There is a hidden web page. Use ur detective skills to figure out what it is. Hint: Not "Plinko.html"</p>
+    <div class="container">
+        <h1>🔍 Riskit.com Findit 🔍</h1>
+
+        <div class="balance-section">
+            <p>Balance: $<span class="balance" id="balance">1000</span></p>
+        </div>
+
+        <div class="puzzle-section">
+            <h2>🕵️ Detective Challenge</h2>
+            <p class="puzzle-text">There is a hidden web page. Use your detective skills to figure out what it is.</p>
+
+            <div class="hint">
+                <strong>💡 Hint:</strong> Not "Plinko.html"
+            </div>
+
+            <div class="game-controls">
+                <button onclick="checkAnswer()">🔍 Submit Answer</button>
+                <button onclick="showHint()">💡 Need Another Hint?</button>
+            </div>
+        </div>
+
+        <div class="results" id="result" style="display: none;">
+            <p></p>
+        </div>
+    </div>
+
+    <div class="rules">
+        <h2>📋 Rules:</h2>
+        <p>1. 🔍 Find the hidden webpage name</p>
+        <p>2. 💰 Game costs $10 to play</p>
+        <p>3. 🏆 Win $100 if you find the correct page!</p>
+        <p>4. 💡 Use hints if you get stuck</p>
+        <p>5. 🎯 Type the exact filename (e.g., "page.html")</p>
+    </div>

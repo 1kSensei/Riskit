@@ -6,61 +6,207 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Riskit.com Dice Game</title>
     <style>
-        /* Add CSS styling to match Coin.html */
+        /* Modern styling matching slots.html */
         body {
             background-color: #1a2c3a;
             color: white;
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         .container {
             text-align: center;
-            margin-top: 50px;
+            max-width: 800px;
+            width: 100%;
         }
 
-        img {
+        h1 {
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .balance-section {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .balance {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .bet-section {
+            margin: 20px 0;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #555;
+            border-radius: 5px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            margin-right: 10px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .dice-container {
+            margin: 40px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+        }
+
+        .dice {
             width: 150px;
             height: 150px;
             margin: 20px;
+            border-radius: 15px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .dice:hover {
+            transform: scale(1.05);
         }
 
         button {
-            margin: 10px;
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: 12px 30px;
+            font-size: 18px;
             cursor: pointer;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            font-weight: bold;
         }
 
-        input[type="number"] {
-            margin-top: 10px;
-            padding: 5px;
-            font-size: 16px;
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .win {
+            color: #4CAF50;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .lose {
+            color: #f44336;
+            font-size: 1.2em;
         }
 
         .rules {
-            margin-top: 20px;
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .rules h2 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+
+        .rules ol {
             text-align: left;
+            display: inline-block;
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .rules li {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 600px) {
+            .dice {
+                width: 120px;
+                height: 120px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            button {
+                padding: 10px 20px;
+                font-size: 16px;
+            }
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <h1>Riskit.com Dice Game</h1>
-        <img id="dice" src="" alt="Dice">
-        <p>Balance: $<span id="balance">100</span></p>
-        <input type="number" id="betAmount" placeholder="Enter bet amount">
-        <button onclick="rollDice()">Roll Dice</button>
+        <h1>🎲 Riskit.com Dice Game 🎲</h1>
 
-        <div class="rules">
-            <h2>Rules:</h2>
-            <ol>
-                <li>Roll the dice and bet an amount of money.</li>
-                <li>If the dice roll is 4, 5, or 6, you win and get double your bet amount.</li>
-                <li>If the dice roll is 1, 2, or 3, you lose your bet amount.</li>
-                <li>You can continue playing until you run out of money.</li>
-            </ol>
+        <div class="balance-section">
+            <p>Balance: $<span class="balance" id="balance">100</span></p>
         </div>
+
+        <div class="bet-section">
+            <input type="number" id="betAmount" placeholder="Enter bet amount" min="1">
+            <button onclick="rollDice()">🎲 Roll Dice 🎲</button>
+        </div>
+
+        <div class="dice-container">
+            <img id="dice" class="dice" src="" alt="Dice">
+        </div>
+
+        <div class="results" id="results">
+            <p>Place your bet and roll the dice!</p>
+        </div>
+    </div>
+
+    <div class="rules">
+        <h2>📋 Rules:</h2>
+        <ol>
+            <li>🎯 Place your bet amount</li>
+            <li>🎲 Roll the dice</li>
+            <li>💰 Roll 4, 5, or 6 to win double your bet!</li>
+            <li>❌ Roll 1, 2, or 3 to lose your bet</li>
+            <li>🔄 Continue playing until you run out of money</li>
+        </ol>
     </div>
 
     <script>
