@@ -32,13 +32,74 @@
             padding: 5px;
             font-size: 16px;
         }
+
+        /* Coin flip animation styles */
+        .coin-container {
+            position: relative;
+            display: inline-block;
+            perspective: 1000px;
+        }
+
+        .coin {
+            width: 150px;
+            height: 150px;
+            margin: 20px;
+            transition: transform 0.1s ease-in-out;
+            transform-style: preserve-3d;
+            position: relative;
+        }
+
+        .coin.flipping {
+            animation: flip 2s ease-in-out;
+        }
+
+        @keyframes flip {
+            0% {
+                transform: rotateY(0deg);
+            }
+            25% {
+                transform: rotateY(90deg);
+            }
+            50% {
+                transform: rotateY(180deg);
+            }
+            75% {
+                transform: rotateY(270deg);
+            }
+            100% {
+                transform: rotateY(360deg);
+            }
+        }
+
+        .coin-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 50%;
+        }
+
+        .coin-front {
+            transform: rotateY(0deg);
+        }
+
+        .coin-back {
+            transform: rotateY(180deg);
+        }
+
+        .betting-disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Riskit.com Coin Flip</h1>
         <h1>Early Beta</h1>
-        <img id="coin" src="" alt="Coin">
+        <div class="coin-container">
+            <img id="coin" class="coin" src="" alt="Coin">
+        </div>
         <p>Balance: $<span id="balance">50</span></p>
         <input type="number" id="betAmount" placeholder="Enter bet amount">
         <button onclick="chooseSide('heads')">Heads</button>
@@ -50,44 +111,63 @@
         let balance = 50; // Initial balance
         const balanceElement = document.getElementById('balance');
         const coinElement = document.getElementById('coin');
+        const buttons = document.querySelectorAll('button');
+        const betInput = document.getElementById('betAmount');
 
         function flipCoin(selectedSide) {
+            // Disable betting during animation
+            buttons.forEach(button => button.classList.add('betting-disabled'));
+            betInput.classList.add('betting-disabled');
+
             // Randomly select heads or tails (0 for heads, 1 for tails)
             const result = Math.floor(Math.random() * 2);
             const coinImage = result === 0 ? 'heads.png' : 'tails.png';
 
-            // Update the coin image
-            coinElement.src = coinImage;
+            // Start the flip animation
+            coinElement.classList.add('flipping');
 
-            // Determine if the player wins or loses based on selected side
-            const playerWins = (selectedSide === 'heads' && result === 0) || (selectedSide === 'tails' && result === 1);
+            // Wait for animation to complete before showing result
+            setTimeout(() => {
+                // Update the coin image
+                coinElement.src = coinImage;
 
-            // Get the bet amount entered by the player
-            const betAmount = parseInt(document.getElementById('betAmount').value);
+                // Determine if the player wins or loses based on selected side
+                const playerWins = (selectedSide === 'heads' && result === 0) || (selectedSide === 'tails' && result === 1);
 
-            // Check if the bet amount is valid
-            if (isNaN(betAmount) || betAmount <= 0 || betAmount > balance) {
-                alert("Please enter a valid bet amount.");
-                return;
-            }
+                // Get the bet amount entered by the player
+                const betAmount = parseInt(document.getElementById('betAmount').value);
 
-            // Update balance based on result
-            if (playerWins) {
-                // If player wins, adjust payout as needed
-                balance += betAmount; // Adjust payout as needed
-            } else {
-                // If player loses, adjust loss as needed
-                balance -= betAmount; // Adjust loss as needed
-            }
+                // Check if the bet amount is valid
+                if (isNaN(betAmount) || betAmount <= 0 || betAmount > balance) {
+                    alert("Please enter a valid bet amount.");
+                    // Re-enable betting
+                    buttons.forEach(button => button.classList.remove('betting-disabled'));
+                    betInput.classList.remove('betting-disabled');
+                    return;
+                }
 
-            // Update balance display
-            balanceElement.textContent = balance;
+                // Update balance based on result
+                if (playerWins) {
+                    // If player wins, adjust payout as needed
+                    balance += betAmount; // Adjust payout as needed
+                } else {
+                    // If player loses, adjust loss as needed
+                    balance -= betAmount; // Adjust loss as needed
+                }
 
-            // Check if player has run out of money
-            if (balance <= 0) {
-                alert("Game over! You've run out of money.");
-                // You can reset the game or take other actions here
-            }
+                // Update balance display
+                balanceElement.textContent = balance;
+
+                // Check if player has run out of money
+                if (balance <= 0) {
+                    alert("Game over! You've run out of money.");
+                    // You can reset the game or take other actions here
+                }
+
+                // Re-enable betting
+                buttons.forEach(button => button.classList.remove('betting-disabled'));
+                betInput.classList.remove('betting-disabled');
+            }, 2000); // Wait 2 seconds for animation to complete
         }
 
         function chooseSide(side) {

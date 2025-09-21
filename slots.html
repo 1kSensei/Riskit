@@ -8,88 +8,426 @@
         /* Add CSS styling to match Coin.html */
         body {
             background-color: #1a2c3a;
-            color: white; /* Set text color to contrast with background */
-            font-family: Arial, sans-serif; /* Optional: Set font family */
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
+
         .container {
             text-align: center;
-            margin-top: 50px;
+            max-width: 800px;
+            width: 100%;
         }
-        .slots {
-            text-align: center;
+
+        h1 {
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
-        button {
-            margin: 10px;
-            padding: 10px 20px;
+
+        .balance-section {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .balance {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .bet-section {
+            margin: 20px 0;
+        }
+
+        input {
+            padding: 10px;
             font-size: 16px;
+            border: 2px solid #555;
+            border-radius: 5px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            margin-right: 10px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .spin-button {
+            padding: 12px 30px;
+            font-size: 18px;
             cursor: pointer;
-            background-color: #333;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
         }
-        input {
-            margin-top: 10px;
-            padding: 5px;
-            font-size: 16px;
+
+        .spin-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .spin-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .slots-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+
+        .slot-machine {
+            background: linear-gradient(145deg, #2c3e50, #34495e);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 3px solid #555;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slot-machine::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4CAF50, #45a049, #4CAF50);
+            animation: lightSweep 2s linear infinite;
+        }
+
+        @keyframes lightSweep {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .slot {
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, #ffffff, #f0f0f0);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4em;
+            margin: 10px;
+            box-shadow:
+                inset 0 4px 8px rgba(255,255,255,0.3),
+                0 6px 15px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slot.spinning {
+            animation: slotSpin 0.1s linear infinite;
+        }
+
+        @keyframes slotSpin {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-120px); }
+        }
+
+        .slot.stopped {
+            animation-play-state: paused;
+        }
+
+        .stop-button {
+            margin-top: 15px;
+            padding: 8px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            opacity: 0.8;
+        }
+
+        .stop-button:hover:not(:disabled) {
+            transform: scale(1.05);
+            opacity: 1;
+            box-shadow: 0 4px 10px rgba(244, 67, 54, 0.3);
+        }
+
+        .stop-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .win {
+            color: #4CAF50;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .lose {
+            color: #f44336;
+            font-size: 1.2em;
+        }
+
+        .rules {
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .rules h2 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+
+        .rules p {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 600px) {
+            .slots-container {
+                gap: 15px;
+            }
+
+            .slot {
+                width: 80px;
+                height: 80px;
+                font-size: 3em;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Riskit.com Slot Machine</h1>
-        <p>Balance: $<span id="balance">250000</span></p>
-        <input type="number" id="betAmount" placeholder="Enter bet amount">
-        <button onclick="spin()">Spin</button>
-        <div class="slots">
-            <div id="slot1">🍒</div>
-            <div id="slot2">🍋</div>
-            <div id="slot3">🍊</div>
+        <h1>🎰 Riskit.com Slot Machine 🎰</h1>
+
+        <div class="balance-section">
+            <p>Balance: $<span class="balance" id="balance">250000</span></p>
         </div>
+
+        <div class="bet-section">
+            <input type="number" id="betAmount" placeholder="Enter bet amount" min="1">
+            <button class="spin-button" onclick="startSpinning()">🎰 SPIN 🎰</button>
+        </div>
+
+        <div class="slots-container">
+            <div class="slot-machine">
+                <div class="slot" id="slot1">🍒</div>
+                <button class="stop-button" id="stop1" onclick="stopSlot(1)" disabled>STOP</button>
+            </div>
+
+            <div class="slot-machine">
+                <div class="slot" id="slot2">🍒</div>
+                <button class="stop-button" id="stop2" onclick="stopSlot(2)" disabled>STOP</button>
+            </div>
+
+            <div class="slot-machine">
+                <div class="slot" id="slot3">🍒</div>
+                <button class="stop-button" id="stop3" onclick="stopSlot(3)" disabled>STOP</button>
+            </div>
+        </div>
+
+        <div class="results" id="results">
+            <p>Ready to spin! Place your bet and click SPIN.</p>
+        </div>
+    </div>
+
+    <div class="rules">
+        <h2>📋 Rules:</h2>
+        <p>1. 🎯 Place your bet and click SPIN to start all slots</p>
+        <p>2. 🎮 Click STOP under each slot to freeze it on the current symbol</p>
+        <p>3. 💰 Wait for all slots to stop before seeing your results</p>
+        <p>4. 🏆 Payouts:</p>
+        <ul style="text-align: left; display: inline-block;">
+            <li>🎰🎰🎰 Three matching symbols: 50x your bet!</li>
+            <li>🎰🎰❓ Two matching symbols: 10x your bet!</li>
+            <li>🍒🍋🍊 Any two different fruits: 2x your bet!</li>
+            <li>❌ No matches: Lose your bet</li>
+        </ul>
     </div>
 
     <script>
         let balance = 250000;
         const balanceElement = document.getElementById('balance');
-        const slot1Element = document.getElementById('slot1');
-        const slot2Element = document.getElementById('slot2');
-        const slot3Element = document.getElementById('slot3');
         const betAmountElement = document.getElementById('betAmount');
+        const spinButton = document.querySelector('.spin-button');
+        const resultsElement = document.getElementById('results');
 
-        function spin() {
+        // Slot elements and controls
+        const slots = [
+            { element: document.getElementById('slot1'), stopButton: document.getElementById('stop1'), interval: null, currentEmoji: '🍒', stopped: false },
+            { element: document.getElementById('slot2'), stopButton: document.getElementById('stop2'), interval: null, currentEmoji: '🍒', stopped: false },
+            { element: document.getElementById('slot3'), stopButton: document.getElementById('stop3'), interval: null, currentEmoji: '🍒', stopped: false }
+        ];
+
+        const emojis = ["🍒", "🍋", "🍊", "🍇", "⭐", "💎", "🎰", "🔔"];
+
+        function startSpinning() {
             const betAmount = parseInt(betAmountElement.value);
-            if (betAmount <= 0 || betAmount > balance) {
-                alert("Please enter a valid bet amount.");
+
+            if (!betAmount || betAmount <= 0) {
+                alert("Please enter a valid bet amount!");
                 return;
             }
 
-            const fruits = ["🍒", "🍋", "🍊"];
-            const result1 = fruits[Math.floor(Math.random() * fruits.length)];
-            const result2 = fruits[Math.floor(Math.random() * fruits.length)];
-            const result3 = fruits[Math.floor(Math.random() * fruits.length)];
-
-            slot1Element.textContent = result1;
-            slot2Element.textContent = result2;
-            slot3Element.textContent = result3;
-
-            if (result1 === result2 && result2 === result3) {
-                balance += betAmount * 4; // Adjusted for 4x payout
-            } else {
-                balance -= betAmount;
+            if (betAmount > balance) {
+                alert("You don't have enough balance for this bet!");
+                return;
             }
 
+            // Deduct bet amount immediately
+            balance -= betAmount;
             balanceElement.textContent = balance;
 
-            if (balance <= 0) {
-                alert("Game over! You've run out of money.");
+            // Reset all slots
+            slots.forEach(slot => {
+                slot.stopped = false;
+                slot.stopButton.disabled = false;
+                slot.element.classList.add('spinning');
+            });
+
+            // Enable stop buttons
+            slots.forEach(slot => {
+                slot.stopButton.disabled = false;
+                slot.stopButton.textContent = 'STOP';
+            });
+
+            // Start spinning each slot
+            slots.forEach((slot, index) => {
+                slot.interval = setInterval(() => {
+                    if (!slot.stopped) {
+                        slot.currentEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+                        slot.element.textContent = slot.currentEmoji;
+                    }
+                }, 100 + (index * 50)); // Stagger the spinning slightly
+            });
+
+            // Update results
+            resultsElement.innerHTML = '<p class="lose">🎰 Spinning... Click STOP on each slot! 🎰</p>';
+
+            // Disable spin button during spinning
+            spinButton.disabled = true;
+            spinButton.textContent = '🎰 SPINNING... 🎰';
+        }
+
+        function stopSlot(slotIndex) {
+            const slot = slots[slotIndex - 1];
+
+            if (slot.stopped) return;
+
+            // Stop the slot
+            slot.stopped = true;
+            slot.element.classList.remove('spinning');
+            clearInterval(slot.interval);
+
+            // Update button
+            slot.stopButton.disabled = true;
+            slot.stopButton.textContent = '✅ STOPPED';
+
+            // Check if all slots are stopped
+            const allStopped = slots.every(s => s.stopped);
+
+            if (allStopped) {
+                calculateWinnings();
+                // Re-enable spin button after a short delay
+                setTimeout(() => {
+                    spinButton.disabled = false;
+                    spinButton.textContent = '🎰 SPIN AGAIN 🎰';
+                }, 2000);
             }
         }
+
+        function calculateWinnings() {
+            const betAmount = parseInt(betAmountElement.value);
+            const results = slots.map(slot => slot.currentEmoji);
+
+            // Count matches
+            const counts = {};
+            results.forEach(emoji => {
+                counts[emoji] = (counts[emoji] || 0) + 1;
+            });
+
+            const maxCount = Math.max(...Object.values(counts));
+            const winningEmoji = Object.keys(counts).find(emoji => counts[emoji] === maxCount);
+
+            let winnings = 0;
+            let message = '';
+
+            if (maxCount === 3) {
+                winnings = betAmount * 50;
+                message = `<p class="win">🎉 JACKPOT! 🎉<br>Three ${winningEmoji}'s = $${winnings} (50x payout!)</p>`;
+            } else if (maxCount === 2) {
+                winnings = betAmount * 10;
+                message = `<p class="win">🎊 Great! 🎊<br>Two ${winningEmoji}'s = $${winnings} (10x payout!)</p>`;
+            } else {
+                // Check for any two different fruits
+                const uniqueEmojis = [...new Set(results)];
+                if (uniqueEmojis.length === 2) {
+                    winnings = betAmount * 2;
+                    message = `<p class="win">👍 Nice! 👍<br>Two different fruits = $${winnings} (2x payout!)</p>`;
+                } else {
+                    message = `<p class="lose">😞 No matches! You lost $${betAmount}</p>`;
+                }
+            }
+
+            balance += winnings;
+            balanceElement.textContent = balance;
+            resultsElement.innerHTML = message;
+
+            if (balance <= 0) {
+                setTimeout(() => {
+                    alert("💸 Game over! You've run out of money. Refresh to play again!");
+                }, 1000);
+            }
+        }
+
+        // Add keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (e.key >= '1' && e.key <= '3') {
+                const slotIndex = parseInt(e.key);
+                if (!slots[slotIndex - 1].stopButton.disabled) {
+                    stopSlot(slotIndex);
+                }
+            }
+        });
+
+        // Initialize
+        balanceElement.textContent = balance;
     </script>
 </body>
-</html>
-<div class="rules" style="margin-top: 20px; padding: 10px; background-color: #1c1c1c; color: white;">
-    <h2>Rules:</h2>
-    <p>1. Place your bet and spin the slots.</p>
-    <p>2. If all three slots match, you 4x your bet.</p> <!-- Updated based on 4x payout -->
-    <p>3. If not, you lose your bet amount.</p>
-</div>
