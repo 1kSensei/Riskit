@@ -31,15 +31,26 @@
     </style>
 </head>
 <body>
-    <button onclick="window.location.href='signin.html'">Sign Up/in</button>
+    <button onclick="redirectTo('signin.html')">Sign Up/in</button>
+
     <h1>riskit.com</h1>
-    <button onclick="window.location.href='Blackjack.html'">Play Blackjack</button>
-    <button onclick="window.location.href='Coin.html'">Play Coinflip</button>
-    <button onclick="window.location.href='Dice.html'">Play Dice</button>
-    <button onclick="window.location.href='slots.html'">Play Slots</button>
-    <button onclick="window.location.href='roullete.html'">Play Roullete</button>
-    <button onclick="window.location.href='Findit.html'">Play Findit</button>
-    <button onclick="window.location.href='Plinko.html'">Play Plinko</button>
-    <button onclick="window.location.href='Crash.html'">Play Crash</button>
+    <button onclick="redirectTo('Blackjack.html')">Play Blackjack</button>
+    <button onclick="redirectTo('Coin.html')">Play Coinflip</button>
+    <button onclick="redirectTo('Dice.html')">Play Dice</button>
+    <button onclick="redirectTo('slots.html')">Play Slots</button>
+    <button onclick="redirectTo('roullete.html')">Play Roullete</button>
+    <button onclick="redirectTo('Findit.html')">Play Findit</button>
+    <button onclick="redirectTo('Plinko.html')">Play Plinko</button>
+    <button onclick="redirectTo('Crash.html')">Play Crash</button>
+    <p onclick="redirectTo('signin.html')">See Changelog at github.com/1kSensei/Riskit</p>
+
+    <script>
+        function redirectTo(destination) {
+            // Store the destination in session storage
+            sessionStorage.setItem('redirectTo', destination);
+            // Redirect to loading page
+            window.location.href = 'loading.html?to=' + encodeURIComponent(destination);
+        }
+    </script>
 </body>
 </html>

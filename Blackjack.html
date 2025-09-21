@@ -54,6 +54,11 @@
             border-radius: 5px;
         }
 
+        button:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+
         input[type="number"] {
             padding: 5px;
             font-size: 16px;
@@ -69,13 +74,13 @@
         </div>
         <p>Player Score: <span id="playerScore">0</span></p>
         <p>Dealer Score: <span id="dealerScore">0</span></p>
-        <p>Balance: $<span id="balance">750</span></p>
+        <p>Balance: $<span id="balance">2500</span></p>
         <p id="message"></p>
         <label for="betAmount">Bet Amount:</label>
         <input type="number" id="betAmount" min="1">
         <button onclick="deal()">Deal</button>
-        <button onclick="hit()">Hit</button>
-        <button onclick="stand()">Stand</button>
+        <button onclick="hit()" id="hitButton" disabled>Hit</button>
+        <button onclick="stand()" id="standButton" disabled>Stand</button>
     </div>
 
     <script>
@@ -83,7 +88,9 @@
         let dealerHand = [];
         let playerScore = 0;
         let dealerScore = 0;
-        let balance = 750;
+        let balance = 2500;
+        let gameState = 'waiting'; // 'waiting', 'playing', 'ended'
+        let betAmount = 0;
 
         const playerHandElement = document.getElementById('playerHand');
         const dealerHandElement = document.getElementById('dealerHand');
@@ -91,20 +98,29 @@
         const dealerScoreElement = document.getElementById('dealerScore');
         const balanceElement = document.getElementById('balance');
         const messageElement = document.getElementById('message');
+        const hitButton = document.getElementById('hitButton');
+        const standButton = document.getElementById('standButton');
+
+        function updateGameState(newState) {
+            gameState = newState;
+            hitButton.disabled = gameState !== 'playing';
+            standButton.disabled = gameState !== 'playing';
+        }
 
         function deal() {
             // Get the bet amount
-            const betAmount = parseInt(document.getElementById('betAmount').value);
+            betAmount = parseInt(document.getElementById('betAmount').value);
             if (betAmount <= 0 || betAmount > balance) {
                 alert("Please enter a valid bet amount.");
                 return;
             }
 
-            // Initialize hands
+            // Reset game state
             playerHand = [];
             dealerHand = [];
             playerScore = 0;
             dealerScore = 0;
+            updateGameState('playing');
 
             // Clear previous hands
             playerHandElement.innerHTML = 'Player\'s hand: ';
@@ -124,8 +140,8 @@
             balance -= betAmount;
             balanceElement.textContent = balance;
 
-            // Check for immediate Blackjack
-            checkBlackjack();
+            // Check for immediate player Blackjack only
+            checkPlayerBlackjack();
         }
 
         function drawCard(hand, handElement, isFaceDown = false) {
@@ -154,14 +170,9 @@
         function updateScores() {
             // Calculate player score
             playerScore = calculateScore(playerHand);
-
-            // Display player score
             playerScoreElement.textContent = playerScore;
 
-            // Calculate dealer score
-            dealerScore = calculateScore(dealerHand);
-
-            // Check if dealer has a face-down card
+            // Calculate dealer score only if all cards are revealed
             const dealerCards = dealerHandElement.getElementsByTagName('img');
             let hasFaceDownCard = false;
             for (let img of dealerCards) {
@@ -171,10 +182,12 @@
                 }
             }
 
-            // Display dealer score: partial if face-down card, full otherwise
             if (hasFaceDownCard) {
+                // Only show visible dealer's first card score
                 dealerScoreElement.textContent = calculateVisibleDealerScore(dealerHand);
             } else {
+                // All cards revealed, calculate full score
+                dealerScore = calculateScore(dealerHand);
                 dealerScoreElement.textContent = dealerScore;
             }
         }
@@ -220,29 +233,32 @@
             return score;
         }
 
-        function checkBlackjack() {
+        function checkPlayerBlackjack() {
             if (playerScore === 21) {
                 messageElement.textContent = "Blackjack! You win!";
-                balance += parseInt(document.getElementById('betAmount').value) * 2.5;
+                balance += betAmount * 2.5;
                 balanceElement.textContent = balance;
-                return;
-            } else if (dealerScore === 21) {
-                messageElement.textContent = "Dealer has Blackjack! You lose!";
+                updateGameState('ended');
                 return;
             }
         }
 
         function hit() {
+            if (gameState !== 'playing') return;
+
             drawCard(playerHand, playerHandElement);
             updateScores();
 
             if (playerScore > 21) {
                 messageElement.textContent = "Bust! You lose!";
+                updateGameState('ended');
                 return;
             }
         }
 
         function stand() {
+            if (gameState !== 'playing') return;
+
             // Reveal dealer's facedown card
             const dealerCards = dealerHandElement.getElementsByTagName('img');
             for (let img of dealerCards) {
@@ -255,23 +271,35 @@
             // Update scores after revealing
             updateScores();
 
+            // Check for dealer blackjack first
+            if (dealerScore === 21) {
+                messageElement.textContent = "Dealer has Blackjack! You lose!";
+                updateGameState('ended');
+                return;
+            }
+
             // Dealer hits until their score is 17 or higher
             while (dealerScore < 17) {
                 drawCard(dealerHand, dealerHandElement);
                 updateScores();
             }
 
-            if (dealerScore > 21 || dealerScore < playerScore) {
+            // Determine winner
+            if (dealerScore > 21) {
+                messageElement.textContent = "Dealer busts! You win!";
+                balance += betAmount * 2;
+            } else if (dealerScore < playerScore) {
                 messageElement.textContent = "You win!";
-                balance += parseInt(document.getElementById('betAmount').value) * 2;
+                balance += betAmount * 2;
             } else if (dealerScore === playerScore) {
                 messageElement.textContent = "It's a tie!";
-                balance += parseInt(document.getElementById('betAmount').value);
+                balance += betAmount;
             } else {
                 messageElement.textContent = "Dealer wins!";
             }
 
             balanceElement.textContent = balance;
+            updateGameState('ended');
         }
     </script>
 </body>
