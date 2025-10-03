@@ -179,7 +179,8 @@
 
         <div class="bet-section">
             <input type="number" id="betAmount" placeholder="Enter bet amount" min="1">
-            <button onclick="placeBet()">🪐 Place Bet 🪐</button>
+            <input type="number" id="ballCount" placeholder="Number of balls" min="1" value="1">
+            <button id="placeBetButton" onclick="placeBet()">🪐 Place Bet 🪐</button>
         </div>
 
         <div class="results" id="result">
@@ -204,144 +205,352 @@
         const pegRadius = 5;
         const ballRadius = 10;
         const multipliers = [5, 2, 1.5, 1, 0.5, 0, 0.5, 1, 1.5, 2, 5];
+        const boardBottom = canvas.height - 80;
+        const slotCount = multipliers.length;
+        const slotWidth = canvas.width / slotCount;
+
         let balance = 10000;
-        let pegs = [];
+        let balls = [];
+        let animationId = null;
+        let roundCounter = 0;
+        let roundState = null;
+        let dropping = false;
+
+        const physics = {
+            gravity: 0.3,
+            airDrag: 0.995,
+            pegBounce: 0.75,
+            wallBounce: 0.6,
+            floorBounce: 0.35,
+            floorFriction: 0.92,
+            settleVelocity: 0.35
+        };
+
+        const resultEl = document.getElementById('result');
+        const balanceEl = document.getElementById('balance');
+        const dropButton = document.getElementById('placeBetButton');
+        const ballCountInput = document.getElementById('ballCount');
+
+        const pegs = createPegs();
+
+        drawBoard();
+        updateBalance();
+
+        function createPegs() {
+            const positions = [];
+            const verticalSpacing = boardBottom / (rows + 1);
+            for (let row = 0; row < rows; row++) {
+                const columnsInRow = cols - (row % 2);
+                for (let column = 0; column < columnsInRow; column++) {
+                    const x = (column * canvas.width) / (cols - 1) + ((row % 2) * canvas.width) / (cols * 2);
+                    const y = (row + 1) * verticalSpacing;
+                    positions.push({ x, y });
+                }
+            }
+            return positions;
+        }
 
         function updateBalance() {
-            document.getElementById('balance').innerText = `Balance: $${balance.toFixed(2)}`;
+            balanceEl.innerText = balance.toFixed(2);
         }
 
         function drawBoard() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#1a2c3a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Draw pegs
-            for (let i = 0; i < rows; i++) {
-                for (let j = 0; j < cols - (i % 2); j++) {
-                    ctx.beginPath();
-                    ctx.arc(
-                        (j * canvas.width) / (cols - 1) + ((i % 2) * canvas.width) / (cols * 2),
-                        (i * canvas.height) / rows,
-                        pegRadius,
-                        0,
-                        2 * Math.PI
-                    );
-                    ctx.fillStyle = '#b1bad3';
-                    ctx.fill();
-                    ctx.closePath();
-                }
+            ctx.save();
+            ctx.fillStyle = 'rgba(255,255,255,0.05)';
+            ctx.fillRect(0, 0, canvas.width, boardBottom);
+            ctx.restore();
+
+            ctx.fillStyle = '#b1bad3';
+            for (const peg of pegs) {
+                ctx.beginPath();
+                ctx.arc(peg.x, peg.y, pegRadius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.closePath();
             }
 
-            // Draw multiplier slots
-            ctx.font = '14px Arial';
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, boardBottom);
+            ctx.lineTo(canvas.width, boardBottom);
+            ctx.stroke();
+
+            for (let i = 0; i <= slotCount; i++) {
+                const x = i * slotWidth;
+                ctx.beginPath();
+                ctx.moveTo(x, boardBottom);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+
+            ctx.font = '16px Arial';
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'center';
             for (let i = 0; i < multipliers.length; i++) {
-                let x = (i * canvas.width) / (multipliers.length - 1);
-                ctx.fillText(`${multipliers[i]}x`, x, canvas.height - 10);
+                const x = i * slotWidth + slotWidth / 2;
+                ctx.fillText(`${multipliers[i]}x`, x, canvas.height - 20);
             }
         }
 
         function placeBet() {
+            if (dropping) {
+                alert('Balls are still in play. Please wait for them to settle before placing another bet.');
+                return;
+            }
+
             const betAmount = parseFloat(document.getElementById('betAmount').value);
-            if (isNaN(betAmount) || betAmount <= 0) {
+            const ballCount = parseInt(ballCountInput.value, 10);
+
+            if (Number.isNaN(betAmount) || betAmount <= 0) {
                 alert('Please enter a valid bet amount.');
                 return;
             }
-            if (betAmount > balance) {
-                alert('Insufficient funds. Please enter a lower bet amount.');
+
+            if (Number.isNaN(ballCount) || ballCount <= 0) {
+                alert('Please enter how many balls to drop (at least 1).');
                 return;
             }
-            balance -= betAmount;
+
+            const totalBet = betAmount * ballCount;
+
+            if (totalBet > balance) {
+                alert('Insufficient funds. Please enter a lower bet amount or fewer balls.');
+                return;
+            }
+
+            balance -= totalBet;
             updateBalance();
-            dropBall(betAmount);
+
+            roundState = {
+                id: ++roundCounter,
+                count: ballCount,
+                resolved: 0,
+                totalBet,
+                totalWinnings: 0,
+                betAmount,
+                messages: []
+            };
+
+            dropping = true;
+            dropButton.disabled = true;
+            resultEl.innerText = `Dropping ${ballCount} ball${ballCount > 1 ? 's' : ''} at $${betAmount.toFixed(2)} each...`;
+
+            dropBalls(betAmount, ballCount, roundState.id);
         }
 
-        function dropBall(betAmount) {
-            let x = canvas.width / 2;
-            let y = 0;
-            let dx = 0;
-            let dy = 0;
-            const gravity = 0.1;
-            const damping = 0.7;
-
-            // Initialize peg positions for collision detection
-            pegs = [];
-            for (let i = 0; i < rows; i++) {
-                for (let j = 0; j < cols - (i % 2); j++) {
-                    let pegX = (j * canvas.width) / (cols - 1) + ((i % 2) * canvas.width) / (cols * 2);
-                    let pegY = (i * canvas.height) / rows;
-                    pegs.push({ x: pegX, y: pegY });
-                }
+        function dropBalls(betAmount, count, roundId) {
+            const spread = Math.min(120, (count - 1) * ballRadius * 2.2);
+            for (let i = 0; i < count; i++) {
+                const offset = count === 1 ? 0 : -spread / 2 + (spread / (count - 1)) * i;
+                const ball = {
+                    x: Math.min(canvas.width - ballRadius, Math.max(ballRadius, canvas.width / 2 + offset)),
+                    y: ballRadius * 2,
+                    vx: (Math.random() - 0.5) * 1.2,
+                    vy: 0,
+                    betAmount,
+                    roundId,
+                    resultApplied: false,
+                    finished: false,
+                    settleFrames: 0,
+                    remove: false
+                };
+                balls.push(ball);
             }
 
-            function animate() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                drawBoard();
+            if (!animationId) {
+                animationId = requestAnimationFrame(animate);
+            }
+        }
 
-                // Draw ball
-                ctx.beginPath();
-                ctx.arc(x, y, ballRadius, 0, 2 * Math.PI);
-                ctx.fillStyle = '#ff0000';
-                ctx.fill();
-                ctx.closePath();
+        function animate() {
+            animationId = requestAnimationFrame(animate);
+            drawBoard();
 
-                // Apply gravity
-                dy += gravity;
+            for (const ball of balls) {
+                updateBall(ball);
+                drawBall(ball);
+            }
 
-                // Update position
-                x += dx;
-                y += dy;
+            balls = balls.filter(ball => !ball.remove);
 
-                // Boundary collision (left and right walls)
-                if (x - ballRadius < 0) {
-                    x = ballRadius;
-                    dx = -dx * damping;
-                } else if (x + ballRadius > canvas.width) {
-                    x = canvas.width - ballRadius;
-                    dx = -dx * damping;
+            if (!balls.length) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+        }
+
+        function updateBall(ball) {
+            if (ball.remove) {
+                return;
+            }
+
+            if (ball.finished) {
+                ball.settleFrames += 1;
+                if (ball.settleFrames > 45) {
+                    ball.remove = true;
                 }
+                return;
+            }
 
-                // Peg collision detection
-                for (let peg of pegs) {
-                    let distX = x - peg.x;
-                    let distY = y - peg.y;
-                    let dist = Math.sqrt(distX * distX + distY * distY);
-                    if (dist < pegRadius + ballRadius) {
-                        // Simple collision response: reflect dx and reduce speed
-                        if (distX !== 0) {
-                            dx = -dx * damping + (Math.random() - 0.5) * 1.5;
-                        } else {
-                            dx = (Math.random() - 0.5) * 1.5;
-                        }
-                        dy = dy * damping;
-                        // Move ball out of collision
-                        let overlap = pegRadius + ballRadius - dist;
-                        x += (distX / dist) * overlap;
-                        y += (distY / dist) * overlap;
+            ball.vy += physics.gravity;
+            ball.vx *= physics.airDrag;
+            ball.vy *= physics.airDrag;
+
+            ball.x += ball.vx;
+            ball.y += ball.vy;
+
+            handleWallCollisions(ball);
+            handlePegCollisions(ball);
+            handleBottomCollision(ball);
+        }
+
+        function handleWallCollisions(ball) {
+            if (ball.x - ballRadius < 0) {
+                ball.x = ballRadius;
+                ball.vx = Math.abs(ball.vx) * physics.wallBounce;
+            } else if (ball.x + ballRadius > canvas.width) {
+                ball.x = canvas.width - ballRadius;
+                ball.vx = -Math.abs(ball.vx) * physics.wallBounce;
+            }
+        }
+
+        function handlePegCollisions(ball) {
+            for (const peg of pegs) {
+                const distX = ball.x - peg.x;
+                const distY = ball.y - peg.y;
+                const dist = Math.hypot(distX, distY);
+                const minDist = pegRadius + ballRadius;
+
+                if (dist < minDist) {
+                    const normalX = dist !== 0 ? distX / dist : (Math.random() - 0.5);
+                    const normalY = dist !== 0 ? distY / dist : (Math.random() - 0.5);
+                    const penetration = minDist - dist;
+
+                    ball.x += normalX * penetration;
+                    ball.y += normalY * penetration;
+
+                    const relativeVelocity = ball.vx * normalX + ball.vy * normalY;
+                    if (relativeVelocity < 0) {
+                        const impulse = -(1 + physics.pegBounce) * relativeVelocity;
+                        ball.vx += impulse * normalX;
+                        ball.vy += impulse * normalY;
                     }
-                }
 
-                // Check if ball reached bottom
-                if (y + ballRadius > canvas.height) {
-                    y = canvas.height - ballRadius;
-                    const slot = Math.floor(x / (canvas.width / (multipliers.length - 1)));
-                    const multiplier = multipliers[slot];
-                    const winnings = betAmount * multiplier;
-                    balance += winnings;
-                    updateBalance();
-                    document.getElementById('result').innerText =
-                        `Ball landed on ${multiplier}x. You ${winnings > betAmount ? 'won' : 'lost'} $${Math.abs(winnings - betAmount).toFixed(2)}!`;
-                    return;
+                    const tangentX = -normalY;
+                    const tangentY = normalX;
+                    const tangentVelocity = ball.vx * tangentX + ball.vy * tangentY;
+                    const randomTilt = (Math.random() - 0.5) * 0.18;
+                    ball.vx += (randomTilt - tangentVelocity * 0.15) * tangentX;
+                    ball.vy += (randomTilt - tangentVelocity * 0.15) * tangentY;
                 }
-
-                requestAnimationFrame(animate);
             }
-
-            animate();
         }
 
-        drawBoard();
-        updateBalance();
+        function handleBottomCollision(ball) {
+            if (ball.y + ballRadius < boardBottom) {
+                return;
+            }
+
+            ball.y = boardBottom - ballRadius;
+            const slotIndex = clampSlotIndex(ball.x);
+            constrainWithinSlot(ball, slotIndex);
+
+            if (Math.abs(ball.vy) < physics.settleVelocity && Math.abs(ball.vx) < physics.settleVelocity) {
+                settleBall(ball, slotIndex);
+                return;
+            }
+
+            ball.vy = -ball.vy * physics.floorBounce;
+            ball.vx *= physics.floorFriction;
+
+            if (Math.abs(ball.vy) < physics.settleVelocity) {
+                ball.vy = 0;
+            }
+        }
+
+        function constrainWithinSlot(ball, slotIndex) {
+            const leftBoundary = slotIndex * slotWidth + ballRadius;
+            const rightBoundary = (slotIndex + 1) * slotWidth - ballRadius;
+
+            if (ball.x < leftBoundary) {
+                ball.x = leftBoundary;
+                ball.vx = Math.abs(ball.vx) * physics.wallBounce;
+            } else if (ball.x > rightBoundary) {
+                ball.x = rightBoundary;
+                ball.vx = -Math.abs(ball.vx) * physics.wallBounce;
+            }
+        }
+
+        function settleBall(ball, slotIndex) {
+            if (ball.resultApplied) {
+                return;
+            }
+
+            ball.resultApplied = true;
+            ball.finished = true;
+            ball.vx = 0;
+            ball.vy = 0;
+
+            const multiplier = multipliers[slotIndex];
+            const winnings = ball.betAmount * multiplier;
+
+            balance += winnings;
+            updateBalance();
+
+            if (roundState && ball.roundId === roundState.id) {
+                roundState.resolved += 1;
+                roundState.totalWinnings += winnings;
+                roundState.messages.push(`Ball ${roundState.resolved}: ${multiplier}x → $${winnings.toFixed(2)}`);
+                updateRoundDisplay();
+            }
+        }
+
+        function updateRoundDisplay() {
+            if (!roundState) {
+                return;
+            }
+
+            const lines = [...roundState.messages];
+            if (roundState.resolved < roundState.count) {
+                const remaining = roundState.count - roundState.resolved;
+                lines.push(`Awaiting ${remaining} more ball${remaining > 1 ? 's' : ''}...`);
+            } else {
+                const net = roundState.totalWinnings - roundState.totalBet;
+                const netLabel = net >= 0 ? 'Profit' : 'Loss';
+                lines.push(`Total returned: $${roundState.totalWinnings.toFixed(2)} (${netLabel} ${net >= 0 ? '+' : '-'}$${Math.abs(net).toFixed(2)})`);
+                dropButton.disabled = false;
+                dropping = false;
+            }
+
+            resultEl.innerText = lines.join('\n');
+        }
+
+        function clampSlotIndex(x) {
+            const clampedX = Math.min(canvas.width - 0.0001, Math.max(0, x));
+            return Math.min(slotCount - 1, Math.max(0, Math.floor(clampedX / slotWidth)));
+        }
+
+        function drawBall(ball) {
+            ctx.beginPath();
+            const gradient = ctx.createRadialGradient(
+                ball.x - ballRadius / 3,
+                ball.y - ballRadius / 3,
+                ballRadius / 5,
+                ball.x,
+                ball.y,
+                ballRadius
+            );
+            gradient.addColorStop(0, '#ffefba');
+            gradient.addColorStop(1, '#ff5f6d');
+            ctx.fillStyle = gradient;
+            ctx.arc(ball.x, ball.y, ballRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.closePath();
+        }
     </script>
 </body>
 </html>
