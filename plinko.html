@@ -47,17 +47,20 @@
 
         .plinko-board-container {
             margin: 40px 0;
-            background: rgba(0,0,0,0.2);
-            border-radius: 10px;
-            padding: 20px;
+            background: rgba(0,0,0,0.18);
+            border-radius: 16px;
+            padding: 28px 32px;
             backdrop-filter: blur(10px);
+            max-width: 780px;
+            width: 100%;
         }
 
         #plinkoBoard {
-            background-color: #1a2c3a;
-            border: 2px solid rgba(255,255,255,0.2);
-            border-radius: 10px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            display: block;
+            margin: 0 auto;
+            border-radius: 18px;
+            box-shadow: 0 10px 35px rgba(0,0,0,0.32);
+            max-width: 100%;
         }
 
         .bet-section {
@@ -150,8 +153,8 @@
 
         @media (max-width: 600px) {
             #plinkoBoard {
-                width: 300px !important;
-                height: 450px !important;
+                width: 340px !important;
+                height: 510px !important;
             }
 
             h1 {
@@ -174,7 +177,7 @@
         </div>
 
         <div class="plinko-board-container">
-            <canvas id="plinkoBoard" width="400" height="600"></canvas>
+            <canvas id="plinkoBoard" width="600" height="720"></canvas>
         </div>
 
         <div class="bet-section">
@@ -204,10 +207,20 @@
         const cols = 9;
         const pegRadius = 5;
         const ballRadius = 10;
-        const multipliers = [5, 2, 1.5, 1, 0.5, 0, 0.5, 1, 1.5, 2, 5];
+        const multipliers = [
+            1000, 100, 50, 10, 5,
+            2, 1.5, 1, 0.5, 0,
+            0.5, 1, 1.5, 2, 5,
+            10, 50, 100, 1000
+        ];
         const boardBottom = canvas.height - 80;
         const slotCount = multipliers.length;
         const slotWidth = canvas.width / slotCount;
+        const COLOR_LOW_MULTIPLIER = '#ffd54f';
+        const COLOR_HIGH_MULTIPLIER = '#ff1744';
+        const uniqueMultipliers = [...new Set(multipliers)].sort((a, b) => a - b);
+        const slotColors = multipliers.map(multiplier => multiplierToColor(multiplier));
+        const slotGlows = new Array(slotCount).fill(0);
 
         let balance = 10000;
         let balls = [];
@@ -256,15 +269,66 @@
 
         function drawBoard() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#1a2c3a';
+            const frameGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            frameGradient.addColorStop(0, '#081321');
+            frameGradient.addColorStop(1, '#0f1f33');
+            ctx.fillStyle = frameGradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             ctx.save();
-            ctx.fillStyle = 'rgba(255,255,255,0.05)';
+            const playAreaGradient = ctx.createLinearGradient(0, 0, 0, boardBottom);
+            playAreaGradient.addColorStop(0, 'rgba(22, 44, 72, 0.95)');
+            playAreaGradient.addColorStop(1, 'rgba(12, 27, 44, 0.95)');
+            ctx.fillStyle = playAreaGradient;
             ctx.fillRect(0, 0, canvas.width, boardBottom);
             ctx.restore();
 
-            ctx.fillStyle = '#b1bad3';
+            ctx.save();
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+            ctx.fillRect(0, boardBottom, canvas.width, canvas.height - boardBottom);
+            ctx.restore();
+
+            for (let i = 0; i < slotGlows.length; i++) {
+                if (slotGlows[i] > 0) {
+                    slotGlows[i] *= 0.9;
+                    if (slotGlows[i] < 0.02) {
+                        slotGlows[i] = 0;
+                    }
+                }
+            }
+
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            for (let i = 0; i < slotGlows.length; i++) {
+                const rawIntensity = slotGlows[i];
+                if (rawIntensity <= 0) {
+                    continue;
+                }
+
+                const intensity = Math.min(1.5, rawIntensity);
+                const slotX = i * slotWidth;
+                const centerX = slotX + slotWidth / 2;
+                const glowTop = Math.max(0, boardBottom - 70);
+                const glowBottom = canvas.height;
+                const color = slotColors[i];
+                const primaryAlpha = 0.4 * intensity;
+                const secondaryAlpha = 0.18 * intensity;
+
+                const gradient = ctx.createLinearGradient(centerX, glowTop, centerX, glowBottom);
+                gradient.addColorStop(0, rgbaFromColor(color, 0));
+                gradient.addColorStop(0.55, rgbaFromColor(color, secondaryAlpha));
+                gradient.addColorStop(1, rgbaFromColor(color, primaryAlpha));
+                ctx.fillStyle = gradient;
+                ctx.fillRect(slotX, glowTop, slotWidth, glowBottom - glowTop);
+
+                ctx.beginPath();
+                ctx.ellipse(centerX, boardBottom + 16, slotWidth * 0.4, 16, 0, 0, Math.PI * 2);
+                ctx.fillStyle = rgbaFromColor(color, Math.min(0.65, 0.35 * intensity));
+                ctx.fill();
+            }
+            ctx.restore();
+
+            ctx.fillStyle = '#d7e4ff';
             for (const peg of pegs) {
                 ctx.beginPath();
                 ctx.arc(peg.x, peg.y, pegRadius, 0, Math.PI * 2);
@@ -272,8 +336,8 @@
                 ctx.closePath();
             }
 
-            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-            ctx.lineWidth = 2;
+            ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+            ctx.lineWidth = 1.5;
             ctx.beginPath();
             ctx.moveTo(0, boardBottom);
             ctx.lineTo(canvas.width, boardBottom);
@@ -287,8 +351,8 @@
                 ctx.stroke();
             }
 
-            ctx.font = '16px Arial';
-            ctx.fillStyle = '#ffffff';
+            ctx.font = '12px Arial';
+            ctx.fillStyle = 'rgba(255,255,255,0.85)';
             ctx.textAlign = 'center';
             for (let i = 0; i < multipliers.length; i++) {
                 const x = i * slotWidth + slotWidth / 2;
@@ -403,19 +467,29 @@
             ball.x += ball.vx;
             ball.y += ball.vy;
 
-            handleWallCollisions(ball);
+            if (handleOffBoard(ball)) {
+                return;
+            }
+
             handlePegCollisions(ball);
             handleBottomCollision(ball);
         }
 
-        function handleWallCollisions(ball) {
-            if (ball.x - ballRadius < 0) {
-                ball.x = ballRadius;
-                ball.vx = Math.abs(ball.vx) * physics.wallBounce;
-            } else if (ball.x + ballRadius > canvas.width) {
-                ball.x = canvas.width - ballRadius;
-                ball.vx = -Math.abs(ball.vx) * physics.wallBounce;
+        function handleOffBoard(ball) {
+            const fullyOutside = ball.x + ballRadius < 0 || ball.x - ballRadius > canvas.width;
+            const centerOutside = ball.x < 0 || ball.x > canvas.width;
+
+            if (!fullyOutside && !centerOutside) {
+                return false;
             }
+
+            handleBallOffBoard(ball);
+            return true;
+        }
+
+        function handleBallOffBoard(ball) {
+            finalizeBallResult(ball, 0, (ballNumber) => `Ball ${ballNumber}: Off board → $0.00`);
+            ball.remove = true;
         }
 
         function handlePegCollisions(ball) {
@@ -456,8 +530,13 @@
             }
 
             ball.y = boardBottom - ballRadius;
+
+            if (ball.x < 0 || ball.x > canvas.width) {
+                handleBallOffBoard(ball);
+                return;
+            }
+
             const slotIndex = clampSlotIndex(ball.x);
-            constrainWithinSlot(ball, slotIndex);
 
             if (Math.abs(ball.vy) < physics.settleVelocity && Math.abs(ball.vx) < physics.settleVelocity) {
                 settleBall(ball, slotIndex);
@@ -472,20 +551,25 @@
             }
         }
 
-        function constrainWithinSlot(ball, slotIndex) {
-            const leftBoundary = slotIndex * slotWidth + ballRadius;
-            const rightBoundary = (slotIndex + 1) * slotWidth - ballRadius;
-
-            if (ball.x < leftBoundary) {
-                ball.x = leftBoundary;
-                ball.vx = Math.abs(ball.vx) * physics.wallBounce;
-            } else if (ball.x > rightBoundary) {
-                ball.x = rightBoundary;
-                ball.vx = -Math.abs(ball.vx) * physics.wallBounce;
+        function settleBall(ball, slotIndex) {
+            if (ball.resultApplied) {
+                return;
             }
+
+            const multiplier = multipliers[slotIndex];
+            triggerSlotGlow(slotIndex);
+            finalizeBallResult(ball, multiplier);
         }
 
-        function settleBall(ball, slotIndex) {
+        function triggerSlotGlow(slotIndex) {
+            if (slotIndex < 0 || slotIndex >= slotGlows.length) {
+                return;
+            }
+
+            slotGlows[slotIndex] = Math.min(1.25, slotGlows[slotIndex] + 0.85);
+        }
+
+        function finalizeBallResult(ball, multiplier, messageFactory) {
             if (ball.resultApplied) {
                 return;
             }
@@ -495,16 +579,20 @@
             ball.vx = 0;
             ball.vy = 0;
 
-            const multiplier = multipliers[slotIndex];
             const winnings = ball.betAmount * multiplier;
 
             balance += winnings;
             updateBalance();
 
             if (roundState && ball.roundId === roundState.id) {
-                roundState.resolved += 1;
+                const ballNumber = roundState.resolved + 1;
+                roundState.resolved = ballNumber;
                 roundState.totalWinnings += winnings;
-                roundState.messages.push(`Ball ${roundState.resolved}: ${multiplier}x → $${winnings.toFixed(2)}`);
+
+                const message = typeof messageFactory === 'function'
+                    ? messageFactory(ballNumber, winnings, multiplier)
+                    : `Ball ${ballNumber}: ${multiplier}x → $${winnings.toFixed(2)}`;
+                roundState.messages.push(message);
                 updateRoundDisplay();
             }
         }
@@ -535,21 +623,58 @@
         }
 
         function drawBall(ball) {
+            ctx.save();
             ctx.beginPath();
             const gradient = ctx.createRadialGradient(
                 ball.x - ballRadius / 3,
                 ball.y - ballRadius / 3,
-                ballRadius / 5,
+                ballRadius / 6,
                 ball.x,
                 ball.y,
                 ballRadius
             );
-            gradient.addColorStop(0, '#ffefba');
-            gradient.addColorStop(1, '#ff5f6d');
+            gradient.addColorStop(0, '#ffe0a0');
+            gradient.addColorStop(1, '#ff6584');
             ctx.fillStyle = gradient;
+            ctx.shadowColor = 'rgba(255, 110, 130, 0.45)';
+            ctx.shadowBlur = 10;
             ctx.arc(ball.x, ball.y, ballRadius, 0, Math.PI * 2);
             ctx.fill();
             ctx.closePath();
+            ctx.restore();
+        }
+
+        function multiplierToColor(multiplier) {
+            const rank = uniqueMultipliers.indexOf(multiplier);
+            const t = uniqueMultipliers.length > 1 ? rank / (uniqueMultipliers.length - 1) : 0;
+            return lerpColors(COLOR_LOW_MULTIPLIER, COLOR_HIGH_MULTIPLIER, t);
+        }
+
+        function lerpColors(hexA, hexB, t) {
+            const colorA = hexToRgb(hexA);
+            const colorB = hexToRgb(hexB);
+            return {
+                r: Math.round(colorA.r + (colorB.r - colorA.r) * t),
+                g: Math.round(colorA.g + (colorB.g - colorA.g) * t),
+                b: Math.round(colorA.b + (colorB.b - colorA.b) * t)
+            };
+        }
+
+        function hexToRgb(hex) {
+            const normalized = hex.replace('#', '');
+            const expanded = normalized.length === 3
+                ? normalized.split('').map(char => char + char).join('')
+                : normalized;
+
+            return {
+                r: parseInt(expanded.slice(0, 2), 16),
+                g: parseInt(expanded.slice(2, 4), 16),
+                b: parseInt(expanded.slice(4, 6), 16)
+            };
+        }
+
+        function rgbaFromColor(color, alpha) {
+            return `rgba(${color.r}, ${color.g}, ${color.b}, ${alpha})`;
         }
     </script>
 </body>
